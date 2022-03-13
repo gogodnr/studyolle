@@ -5,9 +5,7 @@ import lombok.*;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
-@Getter
-@Setter
-@ToString
+@Getter @Setter @ToString
 @Entity @EqualsAndHashCode(of = "id")
 @Builder @AllArgsConstructor @NoArgsConstructor
 public class Account {
@@ -16,7 +14,7 @@ public class Account {
     private Long id;
 
     @Column(unique = true)
-    private  String email;
+    private String email;
 
     @Column(unique = true)
     private String nickname;
