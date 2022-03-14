@@ -62,4 +62,25 @@ public class AccountControllerTest {
                 then(javaMailSender).should().send(any(SimpleMailMessage.class));
 
             }
+            @DisplayName("인증 메일 확인 - 입력값 오류")
+            @Test
+            void checkEmailToken_with_wrong_inpuit() throws Exception{
+                Account account = Account.builder()
+                        .email("test@email.com")
+                        .password("123455678")
+                        .nickname("sangwook")
+                        .build();
+                Account newAccount = accountRepository.save(account);
+                newAccount.generateEmailCheckToken();
+
+                mockMvc.perform(get("/check-email-token")
+                        .param("token",newAccount.getEmailCheckToken())
+                        .param("email",newAccount.getEmail()))
+                        .andExpect(status().isOk())
+                        .andExpect(model().attributeDoesNotExist("error"))
+                        .andExpect(model().attributeExists("nickname"))
+                        .andExpect(model().attributeExists("numberOfUser"))
+                        .andExpect(view().name("account/checked-email"));
+            }
+
 }
