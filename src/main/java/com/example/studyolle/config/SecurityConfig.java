@@ -13,6 +13,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
+    //CSRF 타사이트에서 폼을 해당사이트로 공격하는 경우 방지 CSRF 토큰을 사용
     @Override
     protected void configure(HttpSecurity http) throws Exception {
             http.authorizeHttpRequests()
