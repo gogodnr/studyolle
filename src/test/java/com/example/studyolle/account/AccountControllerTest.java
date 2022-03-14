@@ -1,5 +1,6 @@
 package com.example.studyolle.account;
 
+import com.example.studyolle.domain.Account;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +11,7 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.then;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -52,6 +53,10 @@ public class AccountControllerTest {
                         .with(csrf()))
                         .andExpect(status().is3xxRedirection())
                         .andExpect(view().name("redirect:/"));
+
+                Account account = accountRepository.findByEmail("work.sangwook@gmail.com");
+                assertNotNull(account);
+                assertNotEquals(account.getPassword(),"12345678");
 
                 assertTrue(accountRepository.existsByEmail("work.sangwook@gmail.com"));
                 then(javaMailSender).should().send(any(SimpleMailMessage.class));
