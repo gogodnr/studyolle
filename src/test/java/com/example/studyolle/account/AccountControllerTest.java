@@ -14,6 +14,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.then;
+import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated;
 import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.unauthenticated;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -44,14 +45,14 @@ public class AccountControllerTest {
                         .andExpect(model().attributeExists("signUpForm"));
             }
 
-            @DisplayName("회원 가입 처리 - 입력값 오류")
+            @DisplayName("회원 가입 처리 - 입력값 정상")
             @Test
-            void signUpSubmit_with_wrong_input() throws Exception{
+            void signUpSubmit_with_correct_input() throws Exception{
                 mockMvc.perform(post("/sign-up")
-                        .param("nickname","sangwook")
-                        .param("email","work.sangwook@gmail.com")
-                        .param("password" ,"12345678")
-                        .with(csrf()))
+                                .param("nickname","sangwook")
+                                .param("email","work.sangwook@gmail.com")
+                                .param("password" ,"12345678")
+                                .with(csrf()))
                         .andExpect(status().is3xxRedirection())
                         .andExpect(view().name("redirect:/"));
 
@@ -63,6 +64,50 @@ public class AccountControllerTest {
                 then(javaMailSender).should().send(any(SimpleMailMessage.class));
 
             }
+
+            @DisplayName("회원 가입 처리 - 입력값 오류")
+            @Test
+            void signUpSubmit_with_wrong_input() throws Exception{
+                mockMvc.perform(post("/sign-up")
+                        .param("nickname","sangwook")
+                        .param("email","work.sangwook@gmail.com")
+                        .param("password" ,"12345678")
+                        .with(csrf()))
+                        .andExpect(status().isOk())
+                        .andExpect(view().name("account/sign-up"))
+                        .andExpect(authenticated().withUsername("sangwook"));
+
+                Account account = accountRepository.findByEmail("work.sangwook@gmail.com");
+                assertNotNull(account);
+                assertNotEquals(account.getPassword(),"12345678");
+
+                assertTrue(accountRepository.existsByEmail("work.sangwook@gmail.com"));
+                then(javaMailSender).should().send(any(SimpleMailMessage.class));
+
+            }
+
+
+            @DisplayName("인증 메일 확인 - 입력값 정상")
+            @Test
+            void checkEmailToken_with_correct_inpuit() throws Exception{
+                Account account = Account.builder()
+                        .email("test@email.com")
+                        .password("123455678")
+                        .nickname("sangwook")
+                        .build();
+                Account newAccount = accountRepository.save(account);
+                newAccount.generateEmailCheckToken();
+        
+                mockMvc.perform(get("/check-email-token")
+                                .param("token",newAccount.getEmailCheckToken())
+                                .param("email",newAccount.getEmail()))
+                        .andExpect(status().isOk())
+                        .andExpect(model().attributeDoesNotExist("error"))
+                        .andExpect(model().attributeExists("nickname"))
+                        .andExpect(model().attributeExists("numberOfUser"))
+                        .andExpect(view().name("account/checked-email"))
+                        .andExpect(authenticated().withUsername("sangwook"));
+            }            
             @DisplayName("인증 메일 확인 - 입력값 오류")
             @Test
             void checkEmailToken_with_wrong_inpuit() throws Exception{

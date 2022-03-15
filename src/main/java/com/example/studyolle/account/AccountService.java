@@ -25,7 +25,6 @@ public class AccountService {
     private final AccountRepository accountRepository;
     private final JavaMailSender javaMailSender;
     private final PasswordEncoder passwordEncoder;
-    private final AuthenticationManager authenticationManager;
 
     private Account accountSave(SignUpForm signUpForm) {
         Account account = Account.builder()
