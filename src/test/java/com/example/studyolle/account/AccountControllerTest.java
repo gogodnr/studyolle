@@ -14,6 +14,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.then;
+import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.unauthenticated;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
@@ -80,7 +81,8 @@ public class AccountControllerTest {
                         .andExpect(model().attributeDoesNotExist("error"))
                         .andExpect(model().attributeExists("nickname"))
                         .andExpect(model().attributeExists("numberOfUser"))
-                        .andExpect(view().name("account/checked-email"));
+                        .andExpect(view().name("account/checked-email"))
+                        .andExpect(unauthenticated());
             }
 
 }

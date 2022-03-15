@@ -1,12 +1,22 @@
 package com.example.studyolle.account;
 
+
 import com.example.studyolle.domain.Account;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -15,6 +25,7 @@ public class AccountService {
     private final AccountRepository accountRepository;
     private final JavaMailSender javaMailSender;
     private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
 
     private Account accountSave(SignUpForm signUpForm) {
         Account account = Account.builder()
@@ -37,9 +48,27 @@ public class AccountService {
     }
 
     @Transactional
-    public void processNewAccount(SignUpForm signUpForm) {
+    public Account processNewAccount(SignUpForm signUpForm) {
         Account newAccount =  accountSave(signUpForm);
         newAccount.generateEmailCheckToken();
         simpleConfirmMailSend(newAccount);
+
+        return newAccount;
+    }
+
+    public void login(Account account) {
+
+        // 정석적인 방법
+//        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+//                account.getNickname(),account.getPassword());
+//
+//        Authentication authentication = authenticationManager.authenticate(authenticationToken);
+
+        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
+                                                             //List.of는 JDK 1.9부터 지원
+        account.getNickname(),account.getPassword(), List.of(new SimpleGrantedAuthority("ROLE_USER")));
+
+        SecurityContextHolder.getContext().setAuthentication(token);
+
     }
 }
