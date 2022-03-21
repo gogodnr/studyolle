@@ -49,6 +49,13 @@ public class AccountController {
      return "redirect:/";
     }
 
+    @GetMapping("/check-email")
+    public String checkEmail(@CurrrentUser Account account,Model model){
+        model.addAttribute("email",account.getEmail());
+
+        return "account/check-email";
+    }
+
     @GetMapping("/check-email-token")
     public String checkEmailTOken(String token, String email, Model model){
         Account account = accountRepository.findByEmail(email);
@@ -69,6 +76,20 @@ public class AccountController {
         model.addAttribute("nickname",account.getNickname());
 
         return view;
+    }
+
+
+    @GetMapping("/resend-confirm-email")
+    public String resendCOnfirmEmail(@CurrrentUser Account account, Model model){
+
+        if(!account.canSendConfirmEmail()){
+            model.addAttribute("error","인증 이메일은 1시간에 한번만 전송할 수 있습니다.");
+            model.addAttribute("email",account.getEmail());
+
+            return "account/check-email";
+        }
+
+        return "redirect:/";
     }
 
 }

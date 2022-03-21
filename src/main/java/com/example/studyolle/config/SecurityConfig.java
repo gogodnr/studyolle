@@ -16,11 +16,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     //CSRF 타사이트에서 폼을 해당사이트로 공격하는 경우 방지 CSRF 토큰을 사용
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-            http.authorizeHttpRequests()
-                    .mvcMatchers("/","/login","/sign-up","/check-email"
+            http.authorizeRequests()
+                    .mvcMatchers("/","/login","/sign-up"
                             ,"/check-email-token","/email-login","/check-email-login","/login-link")
                     .permitAll().mvcMatchers(HttpMethod.GET,"/profile/*").permitAll()
                     .anyRequest().authenticated();
+
+            http.formLogin()
+                    .loginPage("/login").permitAll();
+
+            http.logout()
+                    .logoutSuccessUrl("/");
     }
 
     @Override
