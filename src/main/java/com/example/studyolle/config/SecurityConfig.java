@@ -1,17 +1,28 @@
 package com.example.studyolle.config;
 
 
+import com.example.studyolle.account.AccountService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
+
+import javax.sql.DataSource;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
+
+    private final AccountService accountService;
+    private final DataSource dataSource;
 
     //CSRF 타사이트에서 폼을 해당사이트로 공격하는 경우 방지 CSRF 토큰을 사용
     @Override
@@ -27,6 +38,19 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
             http.logout()
                     .logoutSuccessUrl("/");
+
+            http.rememberMe()
+                    .userDetailsService(accountService)
+                    .tokenRepository(tokenRepository());
+
+    }
+
+    @Bean
+    public PersistentTokenRepository tokenRepository(){
+        JdbcTokenRepositoryImpl jdbcTokenRepository = new JdbcTokenRepositoryImpl();
+        jdbcTokenRepository.setDataSource(dataSource);
+
+        return  jdbcTokenRepository;
     }
 
     @Override
